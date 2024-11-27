@@ -3,7 +3,7 @@ const router = express.Router();
 const worksController = require('../controllers/worksController');
 
 // 북마크 필터링
-router.get('/bookmarks/:category', worksController.getBookmarkedByCategory);
+router.get('/bookmarks', worksController.getBookmarked);
 
 // 북마크 토글
 router.patch('/:id/bookmark', worksController.toggleBookmark);

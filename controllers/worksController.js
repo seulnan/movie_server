@@ -1,10 +1,9 @@
 const Work = require('../models/work');
 
 // 특정 카테고리와 북마크 상태를 기반으로 필터링
-exports.getBookmarkedByCategory = async (req, res) => {
-  const { category } = req.params;
+exports.getBookmarked = async (req, res) => {
   try {
-    const works = await Work.find({ category, isBookmarked: true });
+    const works = await Work.find({ isBookmarked: true });
     res.json(works);
   } catch (err) {
     res.status(500).json({ message: err.message });
