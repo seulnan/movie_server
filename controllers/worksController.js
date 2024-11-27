@@ -1,9 +1,7 @@
-const express = require('express');
 const Work = require('../models/work');
-const router = express.Router();
 
-// 1. 특정 카테고리와 북마크 상태를 기반으로 필터링
-router.get('/bookmarks/:category', async (req, res) => {
+// 특정 카테고리와 북마크 상태를 기반으로 필터링
+exports.getBookmarkedByCategory = async (req, res) => {
   const { category } = req.params;
   try {
     const works = await Work.find({ category, isBookmarked: true });
@@ -11,39 +9,50 @@ router.get('/bookmarks/:category', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-});
+};
 
-// 2. 북마크 상태 토글
-router.patch('/:id/bookmark', async (req, res) => {
+// 북마크 상태 토글
+exports.toggleBookmark = async (req, res) => {
   const { id } = req.params;
   try {
     const work = await Work.findById(id);
+    if (!work) {
+      return res.status(404).json({ message: 'Work not found' });
+    }
     work.isBookmarked = !work.isBookmarked;
     await work.save();
     res.json(work);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-});
+};
 
-// 3. 트렌딩 작품 필터링
-router.get('/trending', async (req, res) => {
+// 트렌딩 작품 필터링
+exports.getTrendingWorks = async (req, res) => {
   try {
     const works = await Work.find({ isTrending: true });
     res.json(works);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-});
+};
 
-// 4. 카테고리가 Movie인 작품 조회
-router.get('/movies', async (req, res) => {
+// 카테고리가 Movie인 작품 조회
+exports.getMovies = async (req, res) => {
   try {
     const works = await Work.find({ category: 'Movie' });
     res.json(works);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-});
+};
 
-module.exports = router;
+// 카테고리가 Movie인 작품 조회
+exports.getTV = async (req, res) => {
+  try {
+    const works = await Work.find({ category: 'TV Series' });
+    res.json(works);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
