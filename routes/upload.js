@@ -1,35 +1,45 @@
 const express = require('express');
-const AWS = require('aws-sdk');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
-const mongoose = require('mongoose');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const Work = require('../models/work'); // Work 스키마 가져오기
 
 const router = express.Router();
 
-// AWS S3 설정
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+// AWS S3 클라이언트 생성
+const s3Client = new S3Client({
   region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-// multer-s3로 S3 업로드 설정
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.AWS_BUCKET_NAME,
-    acl: 'public-read', // 퍼블릭 읽기 권한
-    metadata: (req, file, cb) => {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-      const fileName = `${Date.now().toString()}-${file.originalname}`;
-      const folder = file.fieldname === 'regularLarge' ? 'regular' : 'trending'; // 필드명에 따라 폴더 분리
-      cb(null, `${folder}/${fileName}`); // 경로 설정
-    },
-  }),
-});
+// multer 설정
+const storage = multer.memoryStorage(); // 메모리에 파일 저장
+const upload = multer({ storage });
+
+// 파일 업로드 함수
+const uploadToS3 = async (file, folder) => {
+  const fileName = `${Date.now().toString()}-${file.originalname}`;
+  const key = `${folder}/${fileName}`;
+
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ACL: 'public-read', // 퍼블릭 읽기 권한
+  };
+
+  try {
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+    return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  } catch (err) {
+    console.error('S3 Upload Error:', err);
+    throw new Error('Failed to upload file to S3');
+  }
+};
 
 // 단일 이미지 업로드 엔드포인트
 router.post(
@@ -41,8 +51,14 @@ router.post(
   async (req, res) => {
     try {
       // S3 URL 가져오기
-      const regularLargeUrl = req.files['regularLarge'][0].location;
-      const trendingLargeUrl = req.files['trendingLarge'][0].location;
+      const regularLargeUrl = await uploadToS3(
+        req.files['regularLarge'][0],
+        'regular'
+      );
+      const trendingLargeUrl = await uploadToS3(
+        req.files['trendingLarge'][0],
+        'trending'
+      );
 
       // MongoDB에 저장할 데이터
       const newWork = new Work({
