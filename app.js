@@ -12,7 +12,7 @@ const cors = require('cors');
 app.use(
   cors({
     origin: 'http://localhost:3000', // 허용할 클라이언트 URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // 허용할 HTTP 메서드
+    methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'], // 허용할 HTTP 메서드
     credentials: true, // 인증 정보(쿠키 등) 허용 여부
   })
 );
