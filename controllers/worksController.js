@@ -36,6 +36,17 @@ exports.getTrendingWorks = async (req, res) => {
   }
 };
 
+// 모든 문서 반환
+exports.getRecommendWorks = async (req, res) => {
+  try {
+    // 조건 없이 모든 문서 조회
+    const works = await Work.find().limit(24);
+    res.json(works);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // 카테고리가 Movie인 작품 조회
 exports.getMovies = async (req, res) => {
   try {

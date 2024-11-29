@@ -17,4 +17,7 @@ router.get('/movies', worksController.getMovies);
 // Movie 카테고리 작품 조회
 router.get('/TVseries', worksController.getTV);
 
+// 모든 문서 반환 엔드포인트
+router.get('/recommend', worksController.getRecommendWorks);
+
 module.exports = router;
