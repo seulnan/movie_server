@@ -15,3 +15,8 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// 메인 페이지 경로 추가 (필수!)
+app.get('/', (req, res) => {
+    res.send('hello from render!');
+});
