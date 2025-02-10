@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const mongoose = require('mongoose');
-const Work = require('./models/work'); // Work 스키마 가져오기
+const Work = require('../models/work'); // Work 스키마 가져오기
 
 
 console.log('MongoDB URI:', process.env.MONGO_URI);
