@@ -8,10 +8,18 @@ const app = express();
 
 const cors = require('cors');
 
+const allowedOrigins = [process.env.CLIENT_ORIGIN]; // 허용할 도메인 목록
+
 // CORS 미들웨어 추가
 app.use(
   cors({
-    origin: 'http://localhost:3000', // 허용할 클라이언트 URL
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true); // 허용된 도메인일 경우
+      } else {
+        callback(new Error('Not allowed by CORS')); // 허용되지 않은 도메인일 경우
+      }
+    },
     methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'], // 허용할 HTTP 메서드
     credentials: true, // 인증 정보(쿠키 등) 허용 여부
   })
